@@ -1,6 +1,6 @@
 # ORBIT 2.0
 <p align="center">
-  <img src="orbit2.0.png" alt="ORBIT logo" style="border-radius:50%" />
+  <img src="orbit2.0.png" alt="ORBIT logo" style="border-radius:50%;" />
 </p>
 
 ## Repo layout
