@@ -28,3 +28,5 @@ Temporary Items
 
 # Credential variable files
 .auto.tfvars
+.ssh
+.env
