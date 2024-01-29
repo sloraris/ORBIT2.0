@@ -17,3 +17,41 @@ storage:
       device: /dev/disk/by-partlabel/containers
       format: xfs
       with_mount_unit: true
+  files:
+    # Device hostnmae
+    - path: /etc/hostname
+      mode: 0644
+      contents:
+        inline: kennedy
+    # Network config
+    - path: /etc/NetworkManager/system-connections/ens2.nmconnection
+      mode: 0600
+      contents:
+        inline: |
+          [connection]
+          id=ens2
+          type=ethernet
+          interface-name=ens2
+          [ipv4]
+          address1=10.0.0.50/24,10.0.0.1
+          dns=0.0.0.0;
+          dns-search=
+          may-fail=false
+          method=manual
+    # Maintenance window weekly on Monday mornings from 2-3AM MST
+    - path: /etc/zincati/config.d/55-updates-strategy.toml
+      contents:
+        inline: |
+          [updates]
+          strategy = "periodic"
+          [[updates.periodic.window]]
+          days = [ "Mon" ]
+          start_time = "09:00"
+          length_minutes = 60
+    # Auto update wariness (0.0 - 1.0)
+    - path: /etc/zincati/config.d/51-rollout-wariness.toml
+      contents:
+        inline: |
+          [identity]
+          rollout_wariness = 0.5
+    
