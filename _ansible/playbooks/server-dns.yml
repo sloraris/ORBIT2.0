@@ -11,18 +11,19 @@
     - name: Install prerequisites
       apt:
         name:
-          - curl
-          - gnupg
+          - wget
+          - tar
         state: present
 
-    - name: Add AdGuard Home repository
-      shell: curl -sSL https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/master/scripts/install.sh | sh
-
-    - name: Start AdGuard Home service
-      service:
-        name: AdGuardHome
-        state: started
-        enabled: yes
+    - name: Install and Start AdGuard Home
+      shell: |
+        wget 'https://static.adguard.com/adguardhome/release/AdGuardHome_linux_armv6.tar.gz'
+        tar -xf AdGuardHome_linux_armv6.tar.gz
+        cd AdGuardHome
+        ./AdGuardHome -s install
+        ./AdGuardHome -s start
+      args:
+        chdir: ~
 
     - name: Install Unbound
       apt:
@@ -37,7 +38,7 @@
             verbosity: 1
             interface: 0.0.0.0
             access-control: 0.0.0.0/0 allow
-            port: 5353
+            port: 5335
             do-ip4: yes
             do-udp: yes
             do-tcp: yes
@@ -48,9 +49,27 @@
             use-caps-for-id: yes
             edns-buffer-size: 1232
             prefetch: yes
-            num-threads: 4
+            num-threads: 1
             so-rcvbuf: 1m
             so-sndbuf: 1m
+            private-address: 192.168.0.0/16
+            private-address: 169.254.0.0/16
+            private-address: 172.16.0.0/12
+            private-address: 10.0.0.0/8
+            private-address: fd00::/8
+            private-address: fe80::/10
+
+    - name: Check if unbound-resolvconf service is active
+      command: systemctl is-active unbound-resolvconf.service
+      register: unbound_resolvconf_status
+      ignore_errors: yes
+
+    - name: Disable unbound-resolvconf service
+      service:
+        name: unbound-resolvconf
+        state: stopped
+        enabled: no
+      when: unbound_resolvconf_status.stdout == "active"
 
     - name: Restart Unbound service
       service:
@@ -58,14 +77,14 @@
         state: restarted
         enabled: yes
 
-    - name: Configure AdGuard to use Unbound (supply config file)
+    - name: Configure AdGuard to use Unbound
       lineinfile:
         path: /opt/AdGuardHome/AdGuardHome.yaml
         regexp: '^upstream_dns:'
-        line: 'upstream_dns: ["127.0.0.1:5353"]'
+        line: 'upstream_dns: ["127.0.0.1:5335"]'
         state: present
 
     - name: Restart AdGuard Home to apply changes
-      service:
-        name: AdGuardHome
-        state: restarted
+      shell: ./AdGuardHome -s restart
+      args:
+        chdir: ~/AdGuardHome
