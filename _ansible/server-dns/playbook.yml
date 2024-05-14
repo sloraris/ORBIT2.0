@@ -1,0 +1,71 @@
+---
+- name: Recursive DNS Server
+  hosts: server-dns
+  become: yes
+  tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install prerequisites
+      apt:
+        name:
+          - curl
+          - gnupg
+        state: present
+
+    - name: Add AdGuard Home repository
+      shell: curl -sSL https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/master/scripts/install.sh | sh
+
+    - name: Start AdGuard Home service
+      service:
+        name: AdGuardHome
+        state: started
+        enabled: yes
+
+    - name: Install Unbound
+      apt:
+        name: unbound
+        state: present
+
+    - name: Configure Unbound (supply config file)
+      copy:
+        dest: /etc/unbound/unbound.conf.d/pi-hole.conf
+        content: |
+          server:
+            verbosity: 1
+            interface: 0.0.0.0
+            access-control: 0.0.0.0/0 allow
+            port: 5353
+            do-ip4: yes
+            do-udp: yes
+            do-tcp: yes
+            hide-identity: yes
+            hide-version: yes
+            harden-glue: yes
+            harden-dnssec-stripped: yes
+            use-caps-for-id: yes
+            edns-buffer-size: 1232
+            prefetch: yes
+            num-threads: 4
+            so-rcvbuf: 1m
+            so-sndbuf: 1m
+
+    - name: Restart Unbound service
+      service:
+        name: unbound
+        state: restarted
+        enabled: yes
+
+    - name: Configure AdGuard to use Unbound (supply config file)
+      lineinfile:
+        path: /opt/AdGuardHome/AdGuardHome.yaml
+        regexp: '^upstream_dns:'
+        line: 'upstream_dns: ["127.0.0.1:5353"]'
+        state: present
+
+    - name: Restart AdGuard Home to apply changes
+      service:
+        name: AdGuardHome
+        state: restarted
