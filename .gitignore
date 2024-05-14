@@ -26,8 +26,9 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-# Credential variable files
+# Credential variable files/folders
 .auto.tfvars
 .ssh
 .env
 secrets.yml
+_ansible/secrets
