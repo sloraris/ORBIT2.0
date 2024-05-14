@@ -30,3 +30,4 @@ Temporary Items
 .auto.tfvars
 .ssh
 .env
+secrets.yml
