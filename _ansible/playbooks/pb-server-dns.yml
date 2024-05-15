@@ -1,6 +1,6 @@
 ---
 - name: Recursive DNS Server
-  hosts: server-dns
+  hosts: server_dns
   become: yes
   tasks:
     - name: Update and upgrade apt packages
