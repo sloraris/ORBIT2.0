@@ -28,8 +28,6 @@ Temporary Items
 
 # Credential variable files/folders
 .auto.tfvars
-_terraform/secrets
 .ssh
 .env
-secrets.yml
-_ansible/secrets
+secrets*
