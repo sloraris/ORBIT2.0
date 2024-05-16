@@ -12,52 +12,26 @@
       apt:
         name:
           - wget
+          - git
           - tar
+          - dnsutils
+          - unbound
         state: present
 
-    - name: Install and Start AdGuard Home
-      shell: |
-        wget 'https://static.adguard.com/adguardhome/release/AdGuardHome_linux_armv6.tar.gz'
-        tar -xf AdGuardHome_linux_armv6.tar.gz
-        cd AdGuardHome
-        ./AdGuardHome -s install
-        ./AdGuardHome -s start
-      args:
-        chdir: ~
+    - name: Download server_dns config files to temporary location
+      git:
+        repo: 'https://github.com/sloraris/ORBIT2.0/server_dns.git'
+        dest: ~/config-tmp
+        version: master
+        force: yes
 
-    - name: Install Unbound
-      apt:
-        name: unbound
-        state: present
-
-    - name: Configure Unbound (supply config file)
+    - name: Copy Unbound config file to the appropriate location
       copy:
+        src: ~/config-tmp/unbound.conf
         dest: /etc/unbound/unbound.conf.d/pi-hole.conf
-        content: |
-          server:
-            verbosity: 1
-            interface: 0.0.0.0
-            access-control: 0.0.0.0/0 allow
-            port: 5335
-            do-ip4: yes
-            do-udp: yes
-            do-tcp: yes
-            hide-identity: yes
-            hide-version: yes
-            harden-glue: yes
-            harden-dnssec-stripped: yes
-            use-caps-for-id: yes
-            edns-buffer-size: 1232
-            prefetch: yes
-            num-threads: 1
-            so-rcvbuf: 1m
-            so-sndbuf: 1m
-            private-address: 192.168.0.0/16
-            private-address: 169.254.0.0/16
-            private-address: 172.16.0.0/12
-            private-address: 10.0.0.0/8
-            private-address: fd00::/8
-            private-address: fe80::/10
+        owner: root
+        group: root
+        mode: '0644'
 
     - name: Check if unbound-resolvconf service is active
       command: systemctl is-active unbound-resolvconf.service
@@ -71,20 +45,44 @@
         enabled: no
       when: unbound_resolvconf_status.stdout == "active"
 
+
     - name: Restart Unbound service
       service:
         name: unbound
         state: restarted
         enabled: yes
 
-    - name: Configure AdGuard to use Unbound
+    - name: Install AdGuard Home
+      shell: |
+        wget 'https://static.adguard.com/adguardhome/release/AdGuardHome_linux_armv6.tar.gz'
+        tar -xf AdGuardHome_linux_armv6.tar.gz
+        cd AdGuardHome
+        ./AdGuardHome -s install
+      args:
+        chdir: ~
+
+    - name: Copy AdGuard config file to the appropriate location
+      copy:
+        src: ~/config-tmp/AdGuardHome.yaml
+        dest: ~/AdGuardHome/AdGuardHome.yaml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Clean up cloned repository
+      file:
+        path: ~/config-tmp
+        state: absent
+
+    - name: Change set password for AdGuard
       lineinfile:
-        path: /opt/AdGuardHome/AdGuardHome.yaml
-        regexp: '^upstream_dns:'
-        line: 'upstream_dns: ["127.0.0.1:5335"]'
+        path: ~/AdGuardHome/AdGuardHome.yaml
+        regexp: '^password:.*'
+        line: "password: {{ adguard_pswd }}"
         state: present
 
-    - name: Restart AdGuard Home to apply changes
-      shell: ./AdGuardHome -s restart
-      args:
-        chdir: ~/AdGuardHome
+    - name: Start AdGuard Home
+      service:
+        name: AdGuardHome
+        state: started
+        enabled: yes

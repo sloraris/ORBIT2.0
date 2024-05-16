@@ -31,3 +31,6 @@ Temporary Items
 .ssh
 .env
 secrets*
+
+# Exclude personal directories
+lxc-media
