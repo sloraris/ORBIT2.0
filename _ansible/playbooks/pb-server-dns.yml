@@ -13,29 +13,17 @@
       apt:
         name:
           - wget
-          - git
           - tar
           - dnsutils
           - unbound
         state: present
 
 
-    # Download Github config files
-    - name: Download server_dns config files to temporary location
-      git:
-        repo: 'https://github.com/sloraris/ORBIT2.0.git/server_dns'
-        dest: ~/config-tmp
-        version: master
-        force: yes
-
-
     # Setup Unbound
-    - name: Copy Unbound config file to the appropriate location
-      copy:
-        src: ~/config-tmp/unbound.conf
+    - name: Download Unbound config file
+      get_url:
+        url: "{{ unbound_config_url }}"
         dest: /etc/unbound/unbound.conf.d/pi-hole.conf
-        owner: root
-        group: root
         mode: '0644'
 
     - name: Check if unbound-resolvconf service is active
@@ -87,19 +75,12 @@
         chdir: ~
       when: adguard_stat.stat.exists == False
 
-    - name: Copy AdGuard config file to the appropriate location
-      copy:
-        src: ~/config-tmp/AdGuardHome.yaml
+    - name: Download Adguard config file
+      get_url:
+        url: "{{ adguard_config_url }}"
         dest: ~/AdGuardHome/AdGuardHome.yaml
-        owner: root
-        group: root
         mode: '0644'
         backup: yes
-
-    - name: Clean up cloned repository
-      file:
-        path: ~/config-tmp
-        state: absent
 
     - name: Change set password for AdGuard
       lineinfile:
@@ -121,12 +102,10 @@
         path: /etc/NetworkManager/system-connections/WiredConnection1.nmconnection
       register: profile_stat
 
-    - name: Copy the connection profile template
-      copy:
-        src: ~/config-tmp/template.nmconnection
+    - name: Download NM template file
+      get_url:
+        url: "{{ nm_template_url }}"
         dest: /etc/NetworkManager/system-connections/WiredConnection1.nmconnection
-        owner: root
-        group: root
         mode: '0755'
         backup: yes
       when: profile_stat.stat.exists == False
