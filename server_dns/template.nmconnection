@@ -1,0 +1,13 @@
+[connection]
+id=WiredConnection1
+uuid=PLACEHOLDER_UUID
+type=ethernet
+autoconnect=true
+
+[ethernet]
+mac-address-blacklist=
+
+[ipv4]
+method=auto
+dns=127.0.0.1:53;
+ignore-auto-dns=true

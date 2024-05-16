@@ -3,6 +3,7 @@
   hosts: server_dns
   become: yes
   tasks:
+    # Install needed packages
     - name: Update and upgrade apt packages
       apt:
         update_cache: yes
@@ -18,6 +19,8 @@
           - unbound
         state: present
 
+
+    # Download Github config files
     - name: Download server_dns config files to temporary location
       git:
         repo: 'https://github.com/sloraris/ORBIT2.0/server_dns.git'
@@ -25,6 +28,8 @@
         version: master
         force: yes
 
+
+    # Setup Unbound
     - name: Copy Unbound config file to the appropriate location
       copy:
         src: ~/config-tmp/unbound.conf
@@ -45,12 +50,32 @@
         enabled: no
       when: unbound_resolvconf_status.stdout == "active"
 
+    - name: Comment out unbound_conf in /etc/resolvconf.conf
+      lineinfile:
+        path: /etc/resolvconf.conf
+        regexp: '^unbound_conf='
+        line: '#unbound_conf='
+        state: present
+      when: unbound_resolvconf_status.stdout == 'active'
+
+    - name: Remove /etc/unbound/unbound.conf.d/resolvconf_resolvers.conf
+      file:
+        path: /etc/unbound/unbound.conf.d/resolvconf_resolvers.conf
+        state: absent
+      when: unbound_resolvconf_status.stdout == 'active'
 
     - name: Restart Unbound service
       service:
         name: unbound
         state: restarted
         enabled: yes
+
+
+    # Setup AdGuard Home
+    - name: Check if Adguard exists
+      stat:
+        path: ~/AdGuard
+      register: adguard_stat
 
     - name: Install AdGuard Home
       shell: |
@@ -60,6 +85,7 @@
         ./AdGuardHome -s install
       args:
         chdir: ~
+      when: adguard_stat.stat.exists == False
 
     - name: Copy AdGuard config file to the appropriate location
       copy:
@@ -68,6 +94,7 @@
         owner: root
         group: root
         mode: '0644'
+        backup: yes
 
     - name: Clean up cloned repository
       file:
@@ -86,3 +113,42 @@
         name: AdGuardHome
         state: started
         enabled: yes
+
+
+    # Setup DNS
+    - name: Check if wired connection profile exists
+      stat:
+        path: /etc/NetworkManager/system-connections/WiredConnection1.nmconnection
+      register: profile_stat
+
+    - name: Copy the connection profile template
+      copy:
+        src: ~/config-tmp/template.nmconnection
+        dest: /etc/NetworkManager/system-connections/WiredConnection1.nmconnection
+        owner: root
+        group: root
+        mode: '0755'
+        backup: yes
+      when: profile_stat.stat.exists == False
+
+    - name: Generate a UUID for the connection profile if it does not exist
+      command: uuidgen
+      register: new_uuid
+      when: profile_stat.stat.exists == False
+
+    - name: Insert UUID into the connection profile
+      lineinfile:
+        path: /etc/NetworkManager/system-connections/WiredConnection1.nmconnection
+        regexp: '^uuid=.*'
+        line: "uuid={{ new_uuid.stdout }}"
+      when: profile_stat.stat.exists == False
+
+    - name: Restart NetworkManager to apply new configuration
+      service:
+        name: NetworkManager
+        state: restarted
+      when: profile_stat.stat.exists == False
+
+    - name: NetworkManager connection profile exists!
+      command: echo "Profile exists. Please configure DNS manually."
+      when: profile_stat.stat.exists == True
