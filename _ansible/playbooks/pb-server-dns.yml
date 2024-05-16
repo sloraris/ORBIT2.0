@@ -23,7 +23,7 @@
     # Download Github config files
     - name: Download server_dns config files to temporary location
       git:
-        repo: 'https://github.com/sloraris/ORBIT2.0/server_dns.git'
+        repo: 'https://github.com/sloraris/ORBIT2.0.git/server_dns'
         dest: ~/config-tmp
         version: master
         force: yes
