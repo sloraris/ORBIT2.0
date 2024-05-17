@@ -3,6 +3,7 @@
   hosts: server_dns
   become: yes
   tasks:
+
     # Install needed packages
     - name: Update and upgrade apt packages
       apt:
@@ -62,18 +63,40 @@
     # Setup AdGuard Home
     - name: Check if Adguard exists
       stat:
-        path: ~/AdGuard
-      register: adguard_stat
+        path: ~/AdGuardHome
+      register: adguard_dir_stat
 
-    - name: Install AdGuard Home
+    - name: Download AdGuard Home (does not exist on device)
       shell: |
         wget 'https://static.adguard.com/adguardhome/release/AdGuardHome_linux_armv6.tar.gz'
         tar -xf AdGuardHome_linux_armv6.tar.gz
-        cd AdGuardHome
-        ./AdGuardHome -s install
       args:
         chdir: ~
-      when: adguard_stat.stat.exists == False
+      when: adguard_dir_stat.stat.exists == False
+
+    - name: Check if AdGuard service exists
+      stat:
+        path: /etc/systemd/system/AdGuardHome.service
+      register: adguard_serv_stat
+
+    - name: Install AdGuard
+      shell: "./AdGuardHome -s install"
+      args:
+        chdir: ~
+      when: adguard_serv_stat.stat.exists == False
+
+    - name: Check if AdGuard is active (exists on device)
+      command: systemctl is-active AdGuardHome.service
+      register: adguard_status
+      ignore_errors: yes
+      when: adguard_serv_stat.stat.exists == True
+
+    - name: Start AdGuard (already installed)
+      service:
+        name: AdGuardHome
+        state: started
+        enabled: yes
+      when: adguard_status.stdout == 'inactive'
 
     - name: Download Adguard config file
       get_url:
@@ -89,10 +112,10 @@
         line: "password: {{ adguard_pswd }}"
         state: present
 
-    - name: Start AdGuard Home
+    - name: Restart AdGuard Home
       service:
         name: AdGuardHome
-        state: started
+        state: restarted
         enabled: yes
 
 
