@@ -1,0 +1,10 @@
+- name: Variable test
+  hosts: localhost
+  tasks:
+
+    - name: Debug variables
+      ansible.builtin.debug:
+        msg:
+          - "adguard_config_url: {{ adguard_config_url }}"
+          - "unbound_config_url: {{ unbound_config_url }}"
+          - "nm_template_url: {{ nm_template_url }}"

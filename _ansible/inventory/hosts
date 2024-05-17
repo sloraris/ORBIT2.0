@@ -1,0 +1,25 @@
+# By OS
+raspbian:
+  hosts:
+    dns1:
+      ansible_host: 10.0.0.11
+      ansible_user: 'parker'
+    dns2:
+      ansible_host: 10.0.0.12
+      ansible_user: 'parker'
+
+lxc:
+  hosts:
+    public:
+
+fedora:
+  hosts:
+    discovery:
+      ansible_host: 10.0.3.10
+      ansible_user: 'parker'
+
+# By function
+server_dns:
+  hosts:
+    dns1:
+    dns2:
