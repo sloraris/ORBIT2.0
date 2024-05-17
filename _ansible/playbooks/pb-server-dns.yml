@@ -63,7 +63,7 @@
     # Setup AdGuard Home
     - name: Check if Adguard exists
       stat:
-        path: ~/AdGuardHome
+        path: "{{ dns_base_path }}"/AdGuardHome
       register: adguard_dir_stat
 
     - name: Download AdGuard Home (does not exist on device)
@@ -71,7 +71,7 @@
         wget 'https://static.adguard.com/adguardhome/release/AdGuardHome_linux_armv6.tar.gz'
         tar -xf AdGuardHome_linux_armv6.tar.gz
       args:
-        chdir: ~
+        chdir: "{{ dns_base_path }}"
       when: adguard_dir_stat.stat.exists == False
 
     - name: Check if AdGuard service exists
@@ -82,7 +82,7 @@
     - name: Install AdGuard
       shell: "./AdGuardHome -s install"
       args:
-        chdir: ~
+        chdir: "{{ dns_base_path }}"
       when: adguard_serv_stat.stat.exists == False
 
     - name: Check if AdGuard is active (exists on device)
@@ -101,13 +101,13 @@
     - name: Download Adguard config file
       get_url:
         url: "{{ adguard_config_url }}"
-        dest: ~/AdGuardHome/AdGuardHome.yaml
+        dest: "{{ dns_base_path }}"/AdGuardHome/AdGuardHome.yaml
         mode: '0644'
         backup: yes
 
     - name: Change set password for AdGuard
       lineinfile:
-        path: ~/AdGuardHome/AdGuardHome.yaml
+        path: "{{ dns_base_path }}"/AdGuardHome/AdGuardHome.yaml
         regexp: '^password:.*'
         line: "password: {{ adguard_pswd }}"
         state: present
