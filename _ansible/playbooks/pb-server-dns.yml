@@ -38,6 +38,18 @@
         dest: /etc/unbound/unbound.conf.d/pi-hole.conf
         mode: "0644"
 
+    - name: Check for root.hints
+      ansible.builtin.stat:
+        path: /var/lib/unbound/root.hints
+      register: root_stat
+
+    - name: Download root.hints (does not already exist)
+      ansible.builtin.get_url:
+        url: "{{ unbound_root_hints }}"
+        dest: /var/lib/unbound/root.hints
+        mode: "0644"
+      when: not root_hints.stat.exists
+
     - name: Check if unbound-resolvconf service is active
       ansible.builtin.systemd:
         name: unbound-resolvconf
@@ -164,9 +176,10 @@
 
     - name: Replace IPV4 settings (connection profile already exists)
       ansible.builtin.lineinfile:
-        path: /etc/resolvconf.conf
+        path: /etc/NetworkManager/system-connections/WiredConnection1.nmconnection
         regexp: dns=*
         line: "dns=127.0.0.1:53;"
+        state: present
       when: profile_stat.stat.exists
 
     - name: Restart NetworkManager to apply new configuration
@@ -177,7 +190,7 @@
 
     - name: Change active DNS settings
       ansible.builtin.lineinfile:
-        path: /etc/resolvconf.conf
+        path: /etc/resolv.conf
         regexp: nameservers
         line: "nameservers 127.0.0.1"
         state: present
