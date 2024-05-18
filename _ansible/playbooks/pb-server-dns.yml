@@ -28,6 +28,7 @@
           - tar
           - dnsutils
           - unbound
+          - uuid-runtime
         state: present
 
     # Setup Unbound
@@ -49,21 +50,26 @@
         name: unbound-resolvconf
         state: stopped
         enabled: false
-      when: unbound_resolvconf_status.stdout == "active"
+      when: not unbound_resolvconf_status.failed
+
+    - name: Check if /etc/resolvconf.conf exists
+      ansible.builtin.stat:
+        path: /etc/resolvconf.conf
+      register: dest_stat
 
     - name: Comment out unbound_conf in /etc/resolvconf.conf
       ansible.builtin.lineinfile:
         path: /etc/resolvconf.conf
-        regexp: ^unbound_conf=
+        regexp: unbound_conf=
         line: "#unbound_conf="
         state: present
-      when: unbound_resolvconf_status.stdout == 'active'
+      when: not unbound_resolvconf_status.failed and dest_stat.stat.exists
 
     - name: Remove /etc/unbound/unbound.conf.d/resolvconf_resolvers.conf
       ansible.builtin.file:
         path: /etc/unbound/unbound.conf.d/resolvconf_resolvers.conf
         state: absent
-      when: unbound_resolvconf_status.stdout == 'active'
+      when: not unbound_resolvconf_status.failed
 
     - name: Restart Unbound service
       ansible.builtin.service:
@@ -97,20 +103,11 @@
         creates: /etc/systemd/system/AdGuardHome.service
       when: not adguard_dir_stat.stat.exists
 
-    - name: Check if AdGuard is active (exists on device)
-      ansible.builtin.systemd:
-        service: AdGuardHome
-        state: started
-      register: adguard_status
-      ignore_errors: true
-      when: adguard_serv_stat.stat.exists
-
-    - name: Start AdGuard (already installed)
+    - name: Start AdGuard
       ansible.builtin.service:
         name: AdGuardHome
         state: started
         enabled: true
-      when: adguard_status.stdout == 'inactive'
 
     - name: Download Adguard config file
       ansible.builtin.get_url:
@@ -119,12 +116,17 @@
         mode: "0644"
         backup: true
 
-    - name: Change set password for AdGuard
-      ansible.builtin.lineinfile:
+    - name: Set IP for AdGuard
+      ansible.builtin.replace:
         path: "{{ dns_base_path }}/AdGuardHome/AdGuardHome.yaml"
-        regexp: ^password:.*
-        line: "password: {{ adguard_pswd }}"
-        state: present
+        regexp: 'PLACEHOLDER_IP'
+        replace: "{{ ansible_host }}"
+
+    - name: Set password for AdGuard
+      ansible.builtin.replace:
+        path: "{{ dns_base_path }}/AdGuardHome/AdGuardHome.yaml"
+        regexp: 'PLACEHOLDER_PSWD'
+        replace: "{{ adguard_pswd }}"
 
     - name: Restart AdGuard Home
       ansible.builtin.service:
@@ -154,14 +156,28 @@
       when: not profile_stat.stat.exists
 
     - name: Insert UUID into the connection profile
-      ansible.builtin.lineinfile:
+      ansible.builtin.replace:
         path: /etc/NetworkManager/system-connections/WiredConnection1.nmconnection
-        regexp: ^uuid=.*
-        line: uuid={{ new_uuid.stdout }}
+        regexp: 'PLACEHOLDER_UUID'
+        replace: "{{ new_uuid.stdout }}"
       when: not profile_stat.stat.exists
+
+    - name: Replace IPV4 settings (connection profile already exists)
+      ansible.builtin.lineinfile:
+        path: /etc/resolvconf.conf
+        regexp: dns=*
+        line: "dns=127.0.0.1:53;"
+      when: profile_stat.stat.exists
 
     - name: Restart NetworkManager to apply new configuration
       ansible.builtin.service:
         name: NetworkManager
         state: restarted
       when: not profile_stat.stat.exists
+
+    - name: Change active DNS settings
+      ansible.builtin.lineinfile:
+        path: /etc/resolvconf.conf
+        regexp: nameservers
+        line: "nameservers 127.0.0.1"
+        state: present

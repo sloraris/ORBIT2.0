@@ -23,3 +23,8 @@ server_dns:
   hosts:
     dns1:
     dns2:
+
+# Devices with secrets
+secrets:
+  children:
+    server_dns:

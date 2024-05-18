@@ -34,5 +34,6 @@ Temporary Items
 secrets*
 *.vault
 
-# Exclude personal directories
+# Exclude personal directories and test files
 lxc-media
+*-test*

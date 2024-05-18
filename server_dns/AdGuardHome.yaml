@@ -2,7 +2,7 @@ http:
   pprof:
     port: 6060
     enabled: false
-  address: 10.0.0.11:80
+  address: PLACEHOLDER_IP:80
   session_ttl: 720h
 users:
   - name: parker
