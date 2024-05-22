@@ -5,7 +5,7 @@
 - Network:
     - NGINX:
         icon: nginx-proxy-manager
-        href: 
+        href:
         description:
         widget:
             type: npm
@@ -19,8 +19,8 @@
         widget:
             type: opnsense
             url:
-            username: '03pnHCr56T9LkaJZEjiJNr5sbSNTQKWpqO5v4lOO4ck7obVZkeWXytUTW2NQ8L2C3RfrGxVcq2sew4dr'
-            password: 'RlVFrlG16VSO4QJ3XcxFydKAo73nrV4tMxPetaFFOyNM0NOK87a6GpDluhQeVxzX78JMpS5N+ro97DqW'
+            username: 
+            password:
     - Adguard:
         icon: adguard-home
         href:
