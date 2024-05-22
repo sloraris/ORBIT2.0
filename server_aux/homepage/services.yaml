@@ -19,7 +19,7 @@
         widget:
             type: opnsense
             url:
-            username: 
+            username:
             password:
     - Adguard:
         icon: adguard-home
@@ -78,7 +78,7 @@
         description:
         widget:
           type: nextcloud
-          url: https://37.37.3.10:9001/ocs/v2.php/apps/serverinfo/api/v1/info?format=json
+          url: 
           fields: ["freespace", "activeusers"]
           username:
           password:
