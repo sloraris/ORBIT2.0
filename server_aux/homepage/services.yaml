@@ -5,107 +5,106 @@
 - Network:
     - NGINX:
         icon: nginx-proxy-manager
-        href: http://37.37.2.10:81
+        href: 
         description:
         widget:
             type: npm
-            url: http://37.37.2.10:81
-            username: parker.owings@proton.me
-            password: 'lunaromeo$2'
+            url:
+            username:
+            password:
     - OPNSense:
         icon: opnsense
-        href: https://37.37.1.1
+        href:
         description:
         widget:
             type: opnsense
-            url: https://37.37.1.1
+            url:
             username: '03pnHCr56T9LkaJZEjiJNr5sbSNTQKWpqO5v4lOO4ck7obVZkeWXytUTW2NQ8L2C3RfrGxVcq2sew4dr'
             password: 'RlVFrlG16VSO4QJ3XcxFydKAo73nrV4tMxPetaFFOyNM0NOK87a6GpDluhQeVxzX78JMpS5N+ro97DqW'
     - Adguard:
         icon: adguard-home
-        href: http://37.37.1.1:8080
+        href:
         description:
         widget:
             type: adguard
-            url: http://37.37.1.1:8080
+            url:
             fields: ["queries", "blocked"]
-            username: parker
-            password: lunaromeo$2
+            username:
+            password:
 
 
 - Uptime-Docker-Servers:
     - Uptime:
         icon: uptime-kuma
-        href: http://37.37.2.10:3001
+        href:
         description:
         widget:
             type: uptimekuma
-            url: http://37.37.2.10:3001
-            slug: orbit-stat-homepage
+            url:
+            slug:
     - Dockge:
         icon: docker
-        href: http://37.37.30.30:5001
+        href:
         description:
         widget:
           type: dockge
-          url: http://37.37.30.30:5001
+          url:
     - Proxmox:
         icon: proxmox
-        href: https://37.37.30.11:8006
+        href:
         description:
         widget:
             type: proxmox
-            url: https://37.37.30.11:8006
+            url:
             fields: ["vms", "resources.cpu", "resources.mem"]
-            username: 'api@pam!homepage'
-            password: '29248d6c-b31a-4fab-bdfa-69e66341e2c1'
-            node: dispatch
+            username:
+            password:
+            node:
     - Longhaul:
         icon: truenas
-        href: https://37.37.3.10
+        href:
         description:
         widget:
           type: truenas
           fields: ["load", "uptime"]
-          url: https://37.37.3.10
-          key: '1-IOoClmZbcdK02VIJXhSDlsub4iXNcDgqRyJAH2rpVPusKjRPwRuPodE9J0f6xU0q'
+          url:
+          key:
 
 
 - NAS:
     - Nextcloud:
         icon: https://raw.githubusercontent.com/sloraris/logos/main/slo-cloud.png
-        href: https://37.37.3.10:9001
+        href:
         description:
         widget:
           type: nextcloud
           url: https://37.37.3.10:9001/ocs/v2.php/apps/serverinfo/api/v1/info?format=json
           fields: ["freespace", "activeusers"]
-          username: admin
-          password: 'TorrenFalwick98!'
+          username:
+          password:
     - Immich:
         icon: immich
-        href: http://37.37.3.10:30041
+        href:
         description:
         widget:
           type: immich
-          url: http://37.37.3.10:30041
-          key: 'Mc8iUgshfFPL881befCZFwwenkgTdy3eLjRmrwQvI'
+          url:
+          key:
 
 
 - Minecraft1:
     - Velocity:
         icon: https://raw.githubusercontent.com/sloraris/mc-dev-stuff/main/block.PNG
-        href: http://37.37.30.20/multicraft/index.php?r=site/login
+        href:
         description:
         widget:
           type: minecraft
           fields: ["status"]
-          url: udp://37.37.30.20:25565
+          url:
 - Minecraft-aux:
     - MC CasaOS:
           icon: casaos
-          href: http://37.37.30.20:81/#/
+          href:
     - MC Editor:
           icon: vscode
-          href: http://37.37.30.20:3000
-    
+          href:
