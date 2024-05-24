@@ -1,0 +1,14 @@
+---
+# Tasks to configure AdGuardHome
+
+# Install AdGuardHome template
+- name: Deploy AdGuard configuration
+  ansible.builtin.template:
+    src: "{{ adguard_config_template }}"
+    dest: "{{ adguard_config_location }}"
+    mode: '0644'
+    lstrip_blocks: true
+  notify: Restart Adguard service
+
+
+# TODO: Setup new DNS settings if necessary and restart or reload DNS

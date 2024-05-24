@@ -1,0 +1,90 @@
+---
+# Tasks to install AdGuard Home
+
+# Check if AdGuard is already installed (fail if it is)
+- name: Check for existing AdGuardHome install
+  ansible.builtin.fail:
+    msg: "AdGuard Home service is already installed on this device: {{ ansible_host }}"
+  when: path.exists("/etc/systemd/system/AdGuardHome.service")
+
+
+# Check if AdGuard files already exist
+- name: Check for existing AdGuardHome directory
+  ansible.builtin.stat:
+    path: "{{ adguard_dir_location }}"
+  register: adguard_dir_stat
+
+- name: Alert that AdGuardHome directory already exists
+  ansible.builtin.debug:
+    msg: "AdGuard directory already exists on this device: {{ ansible_host }}"
+  when: adguard_dir_stat.stat.exists
+
+- name: Verify install script exists
+  ansible.builtin.stat:
+    path: "{{ adguard_dir_location }}/AdGuardHome"
+  register: adguard_install_script_stat
+
+- name: Alert that AdGuardHome install script already exists
+  ansible.builtin.debug:
+    msg: "AdGuardHome install script already exists on this device: {{ ansible_host }}"
+  when: adguard_install_script_stat.stat.exists
+
+
+# Remove existing directory if no install script is present
+- name: Alert that AdGuardHome install script was not present
+  ansible.builtin.debug:
+    msg: "Removing directory because AdGuardHome install script was not present on this device: {{ ansible_host }}"
+  when: not adguard_install_script_stat.stat.exists
+
+- name: Remove AdGuardHome files
+  ansible.builtin.file:
+    path: "{{ adguard_dir_location }}"
+    state: absent
+  become: true
+  when: not adguard_install_script_stat.stat.exists
+
+
+# Check if AdGuard has already been downloaded (if directory does not exist)
+- name: Check for AdGuardHome archive
+  ansible.builtin.stat:
+    path: "{{ adguard_archive_location }}"
+  register: adguard_archive_stat
+  when: not adguard_dir_stat.stat.exists
+
+- name: Alert that AdGuardHome archive is already downloaded
+  ansible.builtin.debug:
+    msg: "AdGuard archive is already downloaded on this device: {{ ansible_host }}"
+  when: adguard_archive_stat.stat.exists
+
+
+# Download AdGuard if not already on the device (if package is not already downloaded)
+- name: Download AdGuardHome archive
+  ansible.builtin.get_url:
+    url: "{{ adguard_src_url }}"
+    dest: "{{ adguard_archive_location }}"
+    mode: "0644"
+  when: not adguard_archive_stat.stat.exists
+
+
+# Create AdGuard directory (if it does not already exist)
+- name: Unpack AdGuardHome archive
+  ansible.builtin.unarchive:
+    src: "{{ adguard_archive_location }}"
+    dest: "{{ adguard_dir_location }}"
+    extra_opts:
+      - ['--strip=1']
+  when: not adguard_dir_stat.stat.exists
+
+
+# Run install script
+- name: Install AdGuardHome
+  ansible.builtin.command:
+    cmd: AdGuardHome -s install
+    chdir: "{{ adguard_dir_location }}"
+    creates: "{{ adguard_service }}"
+
+
+# Call config tasks
+- name: Configure new AdGuardHome install
+  ansible.builtin.include_tasks:
+    - adguard_config.yml

@@ -2,11 +2,11 @@ http:
   pprof:
     port: 6060
     enabled: false
-  address: PLACEHOLDER_IP:80
+  address: {{ ansible_host }}
   session_ttl: 720h
 users:
   - name: parker
-    password: PLACEHOLDER_PSWD
+    password: {{ secret_adguard_pswd }}
 auth_attempts: 5
 block_auth_min: 15
 http_proxy: ""
@@ -23,7 +23,7 @@ dns:
   ratelimit_whitelist: []
   refuse_any: true
   upstream_dns:
-    - 127.0.0.1:5353
+    - {{ adguard_upstream_dns }}
   upstream_dns_file: ""
   bootstrap_dns:
     - 9.9.9.10

@@ -1,6 +1,0 @@
----
-unbound_config_url: https://raw.githubusercontent.com/sloraris/ORBIT2.0/main/server_dns/pi-hole.conf
-unbound_root_hints: https://www.internic.net/domain/named.root
-adguard_config_url: https://raw.githubusercontent.com/sloraris/ORBIT2.0/main/server_dns/AdGuardHome.yaml
-nm_template_url: https://raw.githubusercontent.com/sloraris/ORBIT2.0/main/server_dns/template.nmconnection
-dns_base_path: /home/parker
