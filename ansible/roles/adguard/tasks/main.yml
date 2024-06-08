@@ -3,12 +3,12 @@
 
 - name: Install AdGuardHome
   ansible.builtin.include_tasks:
-    - adguard_install.yml
+    file: adguard_install.yml
 
 - name: Configure AdGuardHome
   ansible.builtin.include_tasks:
-    - adguard_config.yml
+    file: adguard_config.yml
 
 - name: Remove AdGuardHome
   ansible.builtin.include_tasks:
-    - adguard_uninstall.yml
+    file: adguard_uninstall.yml

@@ -1,5 +1,6 @@
 ---
 # handlers file for adguard
+
 - name: Start AdGuardHome
   ansible.builtin.service:
     name: AdGuardHome
