@@ -35,5 +35,5 @@ secrets*
 *.vault
 
 # Exclude personal directories and test files
-lxc-media
+*-media
 *-test*
