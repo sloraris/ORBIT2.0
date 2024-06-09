@@ -38,17 +38,17 @@
         dest: /etc/unbound/unbound.conf.d/pi-hole.conf
         mode: "0644"
 
-    - name: Check for root.hints
-      ansible.builtin.stat:
-        path: /var/lib/unbound/root.hints
-      register: root_stat
+    # - name: Check for root.hints
+    #   ansible.builtin.stat:
+    #     path: /var/lib/unbound/root.hints
+    #   register: root_stat
 
-    - name: Download root.hints (does not already exist)
-      ansible.builtin.get_url:
-        url: "{{ unbound_root_hints }}"
-        dest: /var/lib/unbound/root.hints
-        mode: "0644"
-      when: not root_hints.stat.exists
+    # - name: Download root.hints (does not already exist)
+    #   ansible.builtin.get_url:
+    #     url: "{{ unbound_root_hints }}"
+    #     dest: /var/lib/unbound/root.hints
+    #     mode: "0644"
+    #   when: not root_hints.stat.exists
 
     - name: Check if unbound-resolvconf service is active
       ansible.builtin.systemd:
