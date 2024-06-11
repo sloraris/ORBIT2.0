@@ -9,35 +9,12 @@
     state: present
   register: ag_service_exists
 
-# Check if adguard is running
-- name: Check state of adguard service
-  ansible.builtin.service:
-    name: AdGuardHome
-    state: started
-  register: ag_service_running
-  when: not ag_service_exists
-
-# Check if adguard archive has been downloaded
-- name: Check for adguard archive
-  ansible.builtin.stat:
-    path: "{{ adguard_archive_location }}"
-  register: ag_archive_stat
-  when: not ag_service_exists
-
-## Download AdGuard archive if not already on the device
+## Download AdGuard archive
 - name: Download AdGuardHome archive
   ansible.builtin.get_url:
     url: "{{ adguard_src_url }}"
     dest: "{{ adguard_archive_location }}"
     mode: "0644"
-  when: not ag_archive_stat.stat.exists
-
-# Check if adguard directory exists
-- name: Check for adguard directory
-  ansible.builtin.stat:
-    path: "{{ adguard_dir_location }}"
-  register: ag_dir_stat
-  when: not ag_service_exists
 
 ## Create AdGuard directory (if it does not already exist)
 - name: Unpack AdGuardHome archive
@@ -46,7 +23,6 @@
     dest: "{{ adguard_dir_location }}"
     extra_opts:
       - ['--strip=1']
-  when: not adguard_dir_stat.stat.exists
 
 # TODO: Check if device DNS settings are correct
 
